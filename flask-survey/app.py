@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, redirect, session
+from flask import Flask, request, render_template, redirect, session, flash
 from surveys import satisfaction_survey as survey
 
 # from flask import Flask, request, render_template, redirect, flash, jsonify
@@ -31,24 +31,27 @@ def show_instructions():
 def start_survey():
     """starts a new session and redirects to first question"""
     session[RESPONSES_KEY] = []
-    print(session[RESPONSES_KEY])
     return redirect(f"/questions/0")
 
 @app.route('/questions/<int:id>')
 def show_question(id):
     """Displays survey question"""
     responses = session[RESPONSES_KEY]
-    if id > len(responses):
-        next_question_id = len(list(questions))
-        return redirect(f"/questions/{next_question_id}")
-    elif len(responses) == 4:
+    # redirect if survey is already done
+    if len(responses) == len(list(questions)):
+        flash("You have already completed the survey!")
         return redirect("/complete")
-    else:
-        question_object = questions[id]
-        question_text = question_object.question
-        choices = question_object.choices
-        allow_text = question_object.allow_text
-        return render_template("question.html", question_id=id, question_text=question_text, choices=choices, allow_text=allow_text)
+    # redirect if jumping ahead in the survey
+    if id != len(list(responses)):
+        flash("You must do these questions in order!")
+        next_question_id = len(responses)
+        return redirect(f"/questions/{next_question_id}")
+    # otherwise display question
+    question_object = questions[id]
+    question_text = question_object.question
+    choices = question_object.choices
+    allow_text = question_object.allow_text
+    return render_template("question.html", question_id=id, question_text=question_text, choices=choices, allow_text=allow_text)
 
 @app.route('/answer', methods=["POST"])
 def save_response():

@@ -1,5 +1,8 @@
 {% extends 'base.html' %} {% block title %}Satisfaction Survey{% endblock %} {%
 block content %}
+{% for msg in get_flashed_messages() %}
+  <p>{{ msg }}</p>
+{% endfor %}
 <h1>Question {{question_id+1}}</h1>
 <p>{{question_text}}</p>
 <!-- Form with options as radio buttons -->
