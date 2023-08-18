@@ -37,11 +37,18 @@ def start_survey():
 @app.route('/questions/<int:id>')
 def show_question(id):
     """Displays survey question"""
-    question_object = questions[id]
-    question_text = question_object.question
-    choices = question_object.choices
-    allow_text = question_object.allow_text
-    return render_template("question.html", question_id=id, question_text=question_text, choices=choices, allow_text=allow_text)
+    responses = session[RESPONSES_KEY]
+    if id > len(responses):
+        next_question_id = len(list(questions))
+        return redirect(f"/questions/{next_question_id}")
+    elif len(responses) == 4:
+        return redirect("/complete")
+    else:
+        question_object = questions[id]
+        question_text = question_object.question
+        choices = question_object.choices
+        allow_text = question_object.allow_text
+        return render_template("question.html", question_id=id, question_text=question_text, choices=choices, allow_text=allow_text)
 
 @app.route('/answer', methods=["POST"])
 def save_response():
